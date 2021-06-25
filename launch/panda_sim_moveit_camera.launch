@@ -1,0 +1,5 @@
+<launch>
+    <include file="$(find panda_sim_moveit)/launch/sim_move_group.launch">
+        <arg name="load_gripper" default="false"/> 
+    </include>
+</launch>

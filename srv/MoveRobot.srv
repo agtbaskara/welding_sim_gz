@@ -1,0 +1,3 @@
+geometry_msgs/Pose targetpose
+---
+sensor_msgs/CompressedImage result
