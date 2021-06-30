@@ -1,0 +1,11 @@
+<launch>
+  <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch">
+  </include>
+  <node
+    pkg="welding_sim_gz"
+    type="simulation_bridge.py"
+    name="simulation_bridge"
+    output="screen"
+    required="true"
+  />
+</launch>

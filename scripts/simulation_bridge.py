@@ -8,163 +8,52 @@ import time
 import math
 from std_msgs.msg import Bool
 from geometry_msgs.msg import Pose
-from sensor_msgs.msg import Image, CompressedImage
-from welding_sim_gz.srv import MoveRobot, MoveRobotResponse
+from sensor_msgs.msg import CompressedImage
+from welding_sim_gz.srv import MoveRobotPose, MoveRobotPoseResponse, MoveRobotJoint, MoveRobotJointResponse
 import moveit_commander
 
-imoving = False
+class MoveGroupInterface():
+    def __init__(self):
+        # Initialize MoveIt
+        moveit_commander.roscpp_initialize(sys.argv)
 
-# def ismoving_cb(msg):
-#     global ismoving
-#     ismoving = msg.data
+        self.robot = moveit_commander.RobotCommander()
+        self.scene = moveit_commander.PlanningSceneInterface()
 
-# def handle_move_robot(req):
-#     global ismoving
-#     rospy.loginfo("Moving Robot")
-#     target_pose_pub.publish(req.targetpose)
-#     ismoving = True
-#     while ismoving:
-#         pass
-#     rospy.loginfo("Movement Done")
-#     image = rospy.wait_for_message("/camera", Image, timeout=None)
-#     time.sleep(1)
-#     return MoveRobotResponse(image)
+        self.group_name = "panda_arm"
+        self.group = moveit_commander.MoveGroupCommander(self.group_name)
+
+        self.image = CompressedImage()
+        
+    def update_image(self, msg):
+        self.image = msg
+    
+    def handle_move_robot_pose(self, req):
+        rospy.loginfo("Moving Robot")
+        self.group.go(req.targetpose, wait=True)
+        self.group.stop()
+        self.group.clear_pose_targets()
+        rospy.loginfo("Movement Done")
+        return MoveRobotPoseResponse(self.image)
+    
+    def handle_move_robot_joint(self, req):
+        rospy.loginfo("Moving Robot")
+        self.group.go(req.targetjoint, wait=True)
+        self.group.stop()
+        self.group.clear_pose_targets()
+        rospy.loginfo("Movement Done")
+        return MoveRobotJointResponse(self.image)
 
 if __name__ == "__main__":
-    rospy.init_node("simulator_bridge")
+    rospy.init_node("simulation_bridge")
 
-    # #define subscriber
-    # ismoving_sub = rospy.Subscriber("/ismoving", Bool, ismoving_cb)
-    # #define publisher
-    # target_pose_pub = rospy.Publisher("/targetpose", Pose, queue_size=1)
-    # #define service
-    # move_robot_srv = rospy.Service("/move_robot", MoveRobot, handle_move_robot)
+    arm_robot = MoveGroupInterface()
 
-    # Initialize MoveIt
-    moveit_commander.roscpp_initialize(sys.argv)
+    # Define Subscriber
+    rospy.Subscriber("/rrbot/camera1/image_raw/compressed", CompressedImage, arm_robot.update_image)
 
-    robot = moveit_commander.RobotCommander()
-    scene = moveit_commander.PlanningSceneInterface()
+    # Define Service
+    move_robot_pose_srv = rospy.Service("/simulation_bridge/move_robot_pose", MoveRobotPose, arm_robot.handle_move_robot_pose)
+    move_robot_joint_srv = rospy.Service("/simulation_bridge/move_robot_joint", MoveRobotJoint, arm_robot.handle_move_robot_joint)
 
-    group_name = "panda_arm"
-    group = moveit_commander.MoveGroupCommander(group_name)
-
-    # Joint Target
-    # joint_goal = group.get_current_joint_values()
-    # joint_goal[0] = 0
-    # joint_goal[1] = -math.pi/4
-    # joint_goal[2] = 0
-    # joint_goal[3] = -math.pi/2
-    # joint_goal[4] = 0
-    # joint_goal[5] = math.pi/3
-    # joint_goal[6] = 0
-
-    # group.go(joint_goal, wait=True)
-    # group.stop()
-    # group.clear_pose_targets()
-
-    # Pose Target
-    pose_goal = Pose()
-    pose_goal.orientation.x = 0.0
-    pose_goal.orientation.y = 0.7071068
-    pose_goal.orientation.z = 0.0
-    pose_goal.orientation.w = 0.7071068
-    pose_goal.position.x = 0.4
-    pose_goal.position.y = 0.0
-    pose_goal.position.z = 0.8
-
-    group.go(pose_goal, wait=True)
-    group.stop()
-    group.clear_pose_targets()
-
-    # WP1
-    print("WP1")
-    pose_goal.position.y = 0.4
-    pose_goal.position.z = 0.9
-    group.go(pose_goal, wait=True)
-    group.stop()
-    group.clear_pose_targets()
-    print("WP Done, Taking Picture!")
-    time.sleep(1)
-
-    # WP2
-    print("WP2")
-    pose_goal.position.y = 0.0
-    pose_goal.position.z = 0.9
-    group.go(pose_goal, wait=True)
-    group.stop()
-    group.clear_pose_targets()
-    print("WP Done, Taking Picture!")
-    time.sleep(1)
-
-    # WP3
-    print("WP3")
-    pose_goal.position.y = -0.4
-    pose_goal.position.z = 0.9
-    group.go(pose_goal, wait=True)
-    group.stop()
-    group.clear_pose_targets()
-    print("WP Done, Taking Picture!")
-    time.sleep(1)
-
-    # WP4
-    print("WP4")
-    pose_goal.position.y = -0.4
-    pose_goal.position.z = 0.6
-    group.go(pose_goal, wait=True)
-    group.stop()
-    group.clear_pose_targets()
-    print("WP Done, Taking Picture!")
-    time.sleep(1)
-
-    # WP5
-    print("WP5")
-    pose_goal.position.y = 0.0
-    pose_goal.position.z = 0.6
-    group.go(pose_goal, wait=True)
-    group.stop()
-    group.clear_pose_targets()
-    print("WP Done, Taking Picture!")
-    time.sleep(1)
-
-    # WP6
-    print("WP6")
-    pose_goal.position.y = 0.4
-    pose_goal.position.z = 0.6
-    group.go(pose_goal, wait=True)
-    group.stop()
-    group.clear_pose_targets()
-    print("WP Done, Taking Picture!")
-    time.sleep(1)
-
-    # WP7
-    print("WP7")
-    pose_goal.position.y = 0.4
-    pose_goal.position.z = 0.2
-    group.go(pose_goal, wait=True)
-    group.stop()
-    group.clear_pose_targets()
-    print("WP Done, Taking Picture!")
-    time.sleep(1)
-
-    # WP8
-    print("WP8")
-    pose_goal.position.y = 0.0
-    pose_goal.position.z = 0.2
-    group.go(pose_goal, wait=True)
-    group.stop()
-    group.clear_pose_targets()
-    print("WP Done, Taking Picture!")
-    time.sleep(1)
-
-    # WP9
-    print("WP9")
-    pose_goal.position.y = -0.4
-    pose_goal.position.z = 0.2
-    group.go(pose_goal, wait=True)
-    group.stop()
-    group.clear_pose_targets()
-    print("WP Done, Taking Picture!")
-    time.sleep(1)
-
-    print("DONE")
+    rospy.spin()

@@ -9,8 +9,10 @@ Franka Panda Arm Robot Simulation With Camera for Welding Inspection in Gazebo
 ## Setup Guide
 1. Clone and Build panda_simulator to your workspace (https://github.com/justagist/panda_simulator)
 2. Clone and Build this repository to your workspace
+3. Install roslibpy (https://github.com/gramaziokohler/roslibpy)
 
 ## How to Run
 1. Run gazebo world (`roslaunch welding_sim_gz panda_world_camera.launch`)
 2. Run moveit (`roslaunch welding_sim_gz panda_sim_moveit_camera.launch`)
-3. Run simulation_bridge node (`rosrun welding_sim_gz simulation_bridge.py`)
+3. Run simulation_bridge node (`roslaunch welding_sim_gz simulation_bridge.launch`)
+4. Run roslibpy program (`python roslibpy_test.py`)
