@@ -38,7 +38,7 @@ class MoveGroupInterface():
     
     def handle_move_robot_joint(self, req):
         rospy.loginfo("Moving Robot")
-        self.group.go(req.targetjoint, wait=True)
+        self.group.go(list(req.targetjoint), wait=True)
         self.group.stop()
         self.group.clear_pose_targets()
         rospy.loginfo("Movement Done")
